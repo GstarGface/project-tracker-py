@@ -54,12 +54,24 @@ def get_grade_by_github_title(github, title):
     """Print grade student received for a project."""
     
     QUERY = """
-    SELECT grade, 
+            SELECT first_name, last_name, github, grade, project_title
+            FROM Students
+            JOIN Grades ON Students.github = Grades.student_github
+            WHERE github = ? AND project_title = ?
+            """
 
+    db_cursor.execute(QUERY, (github, title))
+    row = db_cursor.fetchone()
+    print "Student %s %s (github: %s) received a grade of %s on the %s project." % (row[0], row[1], row[2], row[3], row[4])
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
-    pass
+    
+    QUERY = """INSERT INTO Grades VALUES (?, ?, ?)"""
+    db_cursor.execute(QUERY, (github, title, grade))
+
+    db_connection.commit()
+    print "Successfully added grade of %s for %s on the project %s." % (grade, github, title)
 
 
 def handle_input():
@@ -93,6 +105,11 @@ def handle_input():
             title = args[1]
             get_grade_by_github_title(github, title)
 
+        elif command == "new_grade":
+            github = args[0]
+            title = args[1]
+            grade = args[2]
+            assign_grade(github, title, grade)
 
 if __name__ == "__main__":
     handle_input()
