@@ -48,6 +48,7 @@ def get_project_by_title(title):
         """
 
     db_cursor.execute(QUERY, (title,))
+    print "!%s!" % title
     row = db_cursor.fetchone()
     title, description, max_grade, project_id = row #unpacked row
 
@@ -77,6 +78,15 @@ def assign_grade(github, title, grade):
     db_connection.commit()
     print "Successfully added grade of %s for %s on the project %s." % (grade, github, title)
 
+def make_new_project(title, description, max_grade):
+    """Allow user to add a new project to the Projects table."""
+
+    QUERY = """INSERT INTO Projects (title, description, max_grade) VALUES ( ?, ?, ?)"""
+    db_cursor.execute(QUERY, (title, description, max_grade))
+
+    db_connection.commit()
+
+    print "New project added! Project Title: %s\n Description: %s\n Maximum Grade: %s\n" % ( title, description, max_grade) 
 
 def handle_input():
     """Main loop.
@@ -87,8 +97,8 @@ def handle_input():
     command = None # setting command equal to None enables the while loop to access the DB until we enter quit
 
     while command != "quit":
-        input_string = raw_input("HBA Database> ")
-        tokens = input_string.split()
+        input_string = raw_input("HBA Database (enter commands & arguments separated by commas but no spaces - Example: example_command,Jessica,My Project,This is my project,1000) >>")
+        tokens = input_string.split(',')
         command = tokens[0]
         args = tokens[1:]
 
@@ -112,6 +122,10 @@ def handle_input():
         elif command == "new_grade":
             github, title, grade = args
             assign_grade(github, title, grade)
+
+        elif command == "new_project":
+            title, description, max_grade = args
+            make_new_project(title, description, max_grade)
 
 if __name__ == "__main__":
     handle_input()
